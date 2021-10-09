@@ -1,5 +1,5 @@
 ---
-- name: configure docker daemon
+- name: config | configure docker daemon
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
@@ -11,14 +11,14 @@
   notify:
     - restart docker
 
-- name: add users to docker group
+- name: config | add users to docker group
   user:
     name: "{{ item }}"
     append: yes
     groups: docker
   loop: "{{ docker_allowed_user }}"
 
-- name: log into docker registry private servers
+- name: config | log into docker registry private servers
   docker_login:
     registry_url: "{{ item.host | default(omit) }}"
     username: "{{ item.user }}"

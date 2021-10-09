@@ -1,39 +1,47 @@
 ---
-- name: get docker compose version # noqa 301
+- name: install_docker_compose_bin | get docker compose version # noqa 301
   command: "docker-compose version --short"
   register: docker_compose_result
   ignore_errors: yes
 
-- name: set docker compose current version fact
+- name: install_docker_compose_bin | set docker compose current version fact
   set_fact:
       docker_compose_current_version: "{{ docker_compose_result.stdout | default('') }}"
 
-- name: get latest stable docker compose tag
+- name: install_docker_compose_bin | get latest stable docker compose tag
   uri:
     url: "{{ docker_compose_release_api_url }}"
   ignore_errors: yes
   register: docker_compose_github_result
   when: docker_compose_version == 'latest'
 
-- name: set docker compose version fact
+- name: install_docker_compose_bin | set docker compose version fact
   set_fact:
        docker_compose_version: "{{ docker_compose_github_result.json.name | default(docker_compose_default_version)|replace('v','') }}"
   when: docker_compose_version == 'latest'
 
-- name: set docker compose version fact
+- name: install_docker_compose_bin | debug fact1
+  debug:
+    var: "{{ docker_compose_version }}"
+
+- name: install_docker_compose_bin | set docker compose version fact
   set_fact:
     docker_compose_version: "{{ docker_compose_default_version }}"
   when: not docker_compose_version
 
-- name: "download docker compose binary {{ docker_compose_version }}"
+- name: install_docker_compose_bin | debug fact2
+  debug:
+    var: "{{ docker_compose_version }}"
+
+- name: install_docker_compose_bin | "download docker compose binary {{ docker_compose_version }}"
   get_url:
-      url: "{{ docker_compose_base_url }}/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
+      url: "{{ docker_compose_base_url }}/v{{ docker_compose_version }}/docker-compose-Linux-x86_64"
       dest: /usr/local/bin/docker-compose
       mode: 0755
       force: yes
   when: docker_compose_current_version != docker_compose_version
 
-- name: remove old pip docker-compose dependencies
+- name: install_docker_compose_bin | remove old pip docker-compose dependencies
   pip:
     executable: "{{ docker_python_pip_bin | default('pip') }}"
     name:

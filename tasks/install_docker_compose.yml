@@ -1,5 +1,5 @@
 ---
-- name: remove old pip docker-compose dependencies
+- name: install_docker_compose | remove old pip docker-compose dependencies
   pip:
     executable: "{{ docker_python_pip_bin | default('pip3') }}"
     name:
@@ -9,13 +9,15 @@
       - docker-py
     state: "absent"
 
-- include: install_docker_compose_bin.yml
+- name: install_docker_compose | include install_docker_compose_bin
+  include: install_docker_compose_bin.yml
   when: not docker_compose_by_pip | bool
 
-- include: install_docker_compose_pip.yml
+- name: install_docker_compose | include install_docker_compose_pip
+  include: install_docker_compose_pip.yml
   when: docker_compose_by_pip | bool
 
-- name: ensure pip docker dependencies are installed
+- name: install_docker_compose | ensure pip docker dependencies are installed
   pip:
     executable: "{{ docker_python_pip_bin | default('pip3') }}"
     name:
@@ -23,22 +25,22 @@
     state: "present"
 
 # docker login bug
-- name: remove golang-docker-credential-helpers
+- name: install_docker_compose | remove golang-docker-credential-helpers
   apt:
     name: golang-docker-credential-helpers
     state: absent
 
-- name: get docker compose version # noqa 301
+- name: install_docker_compose | get docker compose version # noqa 301
   command: "docker-compose version --short"
   register: docker_compose_current_result
   ignore_errors: yes
 
-- name: set docker-compose version fact
+- name: install_docker_compose | set docker-compose version fact
   set_fact:
       docker_compose_current_version: "{{ docker_compose_current_result.stdout | default('') }}"
   register: docker_compose_version_fact_result
 
-- name: download docker compose bash completion script
+- name: install_docker_compose | download docker compose bash completion script
   get_url:
     url: 'https://raw.githubusercontent.com/docker/compose/{{ docker_compose_current_version }}/contrib/completion/bash/docker-compose'
     dest: /etc/bash_completion.d/docker-compose

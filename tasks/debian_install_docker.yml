@@ -1,23 +1,23 @@
 ---
-- name: ensure overlay kernel module is loaded
+- name: debian_install_docker | ensure overlay kernel module is loaded
   modprobe:
     name: overlay
     state: present
   when: docker_enable_overlay | bool
 
-- name: enable overlay on boot
+- name: debian_install_docker | enable overlay on boot
   lineinfile:
     path: /etc/modules
     line: 'overlay'
   when: docker_enable_overlay | bool
 
-- name: add docker repository GPG key
+- name: debian_install_docker | add docker repository GPG key
   apt_key:
     url: "{{ docker_apt_key_url }}"
     state: present
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
 
-- name: add docker main repository
+- name: debian_install_docker | add docker main repository
   apt_repository:
     repo: "deb [arch={{ docker_apt_archs[ansible_architecture]|default('amd64') }}] {{ docker_apt_url }} {{ 'focal' if ansible_distribution_version is version('20.04', '>')  else ansible_distribution_release }} stable {{ docker_extra_repo | default('') }}"
     state: present
@@ -25,24 +25,24 @@
   when: ansible_distribution == 'Debian' or ansible_distribution == 'Ubuntu'
   register: docker_apt_result
 
-- name: ensure right permissions on apt sources list
+- name: debian_install_docker | ensure right permissions on apt sources list
   file:
     path: /etc/apt/sources.list.d/docker_official.list
     owner: root
     group: root
     mode: 'u=rw,g=r,o=r'
 
-- name: apt update list for new docker repository # noqa 503
+- name: debian_install_docker | apt update list for new docker repository # noqa 503
   apt:
     update_cache: yes
   when: docker_apt_result.changed | bool
 
-- name: install docker dependencies
+- name: debian_install_docker | install docker dependencies
   apt:
     name: "{{ docker_debian_dependencies }}"
     state: present
 
-- name: install docker engine
+- name: debian_install_docker | install docker engine
   apt:
     name: "{{ docker_apt_package }}{{ ('=' ~ docker_version) if docker_version and docker_version != 'latest' else '' }}"
     state: "{{ 'present' if docker_version and docker_version != 'latest' and docker_state == 'latest' else docker_state }}"

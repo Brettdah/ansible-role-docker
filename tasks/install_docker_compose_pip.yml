@@ -1,5 +1,5 @@
 ---
-- name: install docker compose (pip)
+- name: install_docker_compose_pip | install docker compose (pip)
   pip:
     executable: "{{ docker_python_pip_bin | default('pip3') }}"
     name: docker-compose
