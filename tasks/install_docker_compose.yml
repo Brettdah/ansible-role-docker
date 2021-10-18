@@ -1,4 +1,9 @@
 ---
+- name: install_docker_compose | Be sure there is a link for pip3
+  shell: if [ -h /usr/bin/pip3 ]; then echo "linked"; else cd /usr/bin/; ln -s $(ls | grep pip3) pip3; fi
+  register: create_link
+  changed_when: create_link.stdout != 'linked'
+
 - name: install_docker_compose | remove old pip docker-compose dependencies
   pip:
     executable: "{{ docker_python_pip_bin | default('pip3') }}"
@@ -29,6 +34,7 @@
   apt:
     name: golang-docker-credential-helpers
     state: absent
+  when: ansible_os_family == 'Debian'
 
 - name: install_docker_compose | get docker compose version # noqa 301
   command: "docker-compose version --short"

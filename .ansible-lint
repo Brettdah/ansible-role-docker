@@ -4,6 +4,7 @@ quiet: false
 rulesdir: []
 skip_list:
   - '204'
+#  - '106'
 tags: []
 use_default_rules: true
 verbosity: 0
